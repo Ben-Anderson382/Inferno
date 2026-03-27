@@ -579,9 +579,7 @@ They drag themselves through ice they placed within</p>
               <button class="prompt-btn" type="button" data-intent="regret" data-question="What do you regret?" disabled>What do you regret?</button>
             </div>
 
-            <div class="dialogue-log" id="dialogueLog" aria-live="polite">
-              <div class="empty-state" id="emptyState">The figure notices you, but waits for you to speak first.</div>
-            </div>
+            <div class="dialogue-log" id="dialogueLog" aria-live="polite"></div>
 
             <form class="ask-form" id="askForm">
               <input class="ask-input" id="askInput" type="text" autocomplete="off" placeholder="Ask who this is or why they are here.">
@@ -621,9 +619,6 @@ They drag themselves through ice they placed within</p>
       hotspot: { x: "49%", y: "82%", size: "90px" },
       focus: { x: "50%", y: "73%" },
       replies: {
-        intro: [
-          "The wooden boy turns toward you carefully, as if even a greeting might become another false passage here."
-        ],
         identity: [
           "I am Pinocchio, the boy who wanted the easy shine of invention more than the hard work of truth.",
           "Pinocchio. Not the harmless puppet from a fireside tale, but the child who kept learning how quickly a lie can become a habit.",
@@ -655,10 +650,6 @@ They drag themselves through ice they placed within</p>
       hotspot: { x: "51%", y: "73%", size: "86px" },
       focus: { x: "51%", y: "63%" },
       replies: {
-        intro: [
-          "Macbeth halts on the burning stair, one hand half-raised toward the throne that keeps pulling away.",
-          "The king without rest turns toward you, smoke and gold moving around him like a crown that will not settle."
-        ],
         identity: [
           "Macbeth, once Thane of Glamis and Cawdor, then king by blood, never by peace.",
           "I am Macbeth, the man who heard greatness promised and decided murder was a form of speed.",
@@ -690,10 +681,6 @@ They drag themselves through ice they placed within</p>
       hotspot: { x: "64%", y: "86%", size: "88px" },
       focus: { x: "60%", y: "76%" },
       replies: {
-        intro: [
-          "Anakin Skywalker lifts his face from the ice, breath thinning in the cold as he steadies the chain at his wrists.",
-          "The fallen Jedi watches you in silence for a moment, as if measuring how much truth he still has the courage to name."
-        ],
         identity: [
           "I am Anakin Skywalker. Jedi Knight, Darth Vader, and the man who betrayed nearly every oath that once gave my life its shape.",
           "Anakin Skywalker. I was trusted to protect life, and I turned that calling into fear, violence, and obedience to darkness.",
@@ -755,19 +742,7 @@ They drag themselves through ice they placed within</p>
     askButton.disabled = !enabled;
   }
 
-  function renderEmptyState(message) {
-    dialogueLog.innerHTML = "";
-    const empty = document.createElement('div');
-    empty.className = 'empty-state';
-    empty.textContent = message;
-    dialogueLog.appendChild(empty);
-  }
-
   function appendBubble(kind, speaker, text) {
-    if (dialogueLog.firstElementChild && dialogueLog.firstElementChild.classList.contains('empty-state')) {
-      dialogueLog.innerHTML = "";
-    }
-
     const bubble = document.createElement('div');
     bubble.className = `bubble ${kind}`;
 
@@ -814,7 +789,7 @@ They drag themselves through ice they placed within</p>
   function prepareConversation(key) {
     const scene = characterScenes[key];
     const state = ensureConversationState(key);
-    state.awake = false;
+    state.awake = true;
 
     sceneFrame.style.setProperty('--spot-x', scene.hotspot.x);
     sceneFrame.style.setProperty('--spot-y', scene.hotspot.y);
@@ -827,25 +802,13 @@ They drag themselves through ice they placed within</p>
     askInput.value = "";
     askInput.placeholder = `Ask ${scene.name} who they are, why they are here, or what they regret.`;
     setPromptAvailability(true);
-    renderEmptyState(`${scene.name} is ready to answer.`);
+    dialogueLog.innerHTML = "";
   }
 
   function activateFigure() {
     if (!currentLayerKey) {
       return;
     }
-
-    const scene = characterScenes[currentLayerKey];
-    const state = ensureConversationState(currentLayerKey);
-    if (state.awake) {
-      askInput.focus();
-      return;
-    }
-
-    state.awake = true;
-    setPromptAvailability(true);
-    askInput.placeholder = `Ask ${scene.name} who they are, why they are here, or what they regret.`;
-    appendBubble('character', scene.name, nextReply(currentLayerKey, 'intro'));
     askInput.focus();
   }
 
@@ -860,12 +823,6 @@ They drag themselves through ice they placed within</p>
     }
 
     const scene = characterScenes[currentLayerKey];
-    const state = ensureConversationState(currentLayerKey);
-
-    if (!state.awake) {
-      activateFigure();
-    }
-
     appendBubble('user', 'You', trimmed);
     const intent = forcedIntent || detectIntent(trimmed);
     appendBubble('character', scene.name, nextReply(currentLayerKey, intent));
@@ -884,7 +841,6 @@ They drag themselves through ice they placed within</p>
     overlay.classList.add('show');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
-    activateFigure();
   }
 
   function closeLayer() {
